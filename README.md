@@ -13,6 +13,7 @@
 
 ## Arquitetura
 ´´´mermaid
+
 graph LR
     A[Sensores e Clima] --> B[Processamento IA]
     B --> C[Decisão de Irrigação]
