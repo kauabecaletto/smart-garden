@@ -12,8 +12,9 @@
 | Vitor Marcondes | @vitor-marcondes |
 
 ## Arquitetura
-```mermaid
-graph LR
-    A[Sensores e Clima] --> B[Processamento IA]
-    B --> C[Decisão de Irrigação]
-    C --> D[Atuador e Log]
+15 ```mermaid
+16 graph LR
+17     A[Sensores e Clima] --> B[Processamento IA]
+18     B --> C[Decisão de Irrigação]
+19     C --> D[Atuador e Log]
+20 ```
