@@ -12,4 +12,9 @@
 | Vitor Marcondes | @vitor-marcondes |
 
 ## Arquitetura
-> *A ser preenchido na Aula 6*
+15 ```mermaid
+16 graph LR
+17     A[Sensores e Clima] --> B[Processamento IA]
+18     B --> C[Decisão de Irrigação]
+19     C --> D[Atuador e Log]
+20 ```
