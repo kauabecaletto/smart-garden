@@ -19,3 +19,9 @@ A[Sensores e Clima] --> B[Processamento IA]
 B --> C[Decisão de Irrigação]
 C --> D[Atuador e Log]
 ```
+graph LR
+    A[Usuário: Pede ajuda com planta] --> B[API: Busca Clima e Solo]
+    B --> C[Gemini: Analisa dados e gera dica]
+    C --> D[Saída: Sugestão de Rega/Cuidado]
+    
+    style C fill:#f9f,stroke:#333,stroke-width:2px
