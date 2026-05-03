@@ -1,9 +1,23 @@
 {
-  "name": "My workflow",
+  "name": "workflow",
   "nodes": [
     {
       "parameters": {
-        "url": "https://www.randomnumberapi.com/api/v1.0/random?min=10&max=90&count=1",
+        "url": "https://csrng.net/csrng/csrng.php?min=0&max=100",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1088,
+        0
+      ],
+      "id": "d4b3aae2-4086-4e74-9e18-5cf7ae26aca8",
+      "name": "simulaUmidade"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.open-meteo.com/v1/forecast?latitude=-22.90&longitude=-47.06&current_weather=true",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -12,235 +26,56 @@
         880,
         0
       ],
-      "id": "d4b3aae2-4086-4e74-9e18-5cf7ae26aca8",
-      "name": "simulaUmidade"
-    },
-    {
-      "parameters": {
-        "url": "=https://api.open-meteo.com/v1/forecast?latitude={{ $json.lat }}&longitude={{ $json.lon }}&current_weather=true",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        672,
-        0
-      ],
       "id": "6cbc6635-8451-4596-9fb6-26149d9b7004",
       "name": "buscaClima"
     },
     {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "ace98559-0ace-44d9-aa86-d36bedf4d6fd",
+      "name": "trigger"
+    },
+    {
       "parameters": {
-        "formTitle": "Smart Garden",
-        "formFields": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-flash-preview"
+        },
+        "messages": {
           "values": [
             {
-              "fieldLabel": "Localidade",
-              "fieldType": "dropdown",
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "Casa"
-                  },
-                  {
-                    "option": "Rancho"
-                  },
-                  {
-                    "option": "Chácara"
-                  }
-                ]
-              }
+              "content": "Você é o assistente inteligente do sistema Smart Garden. Sua função é analisar dados climáticos de Campinas e a umidade do solo para decidir se a irrigação deve ser ativada. Responda de forma prática, direta e em formato JSON com 'decisao' (LIGADA ou DESLIGADA) e 'motivo'.",
+              "role": "model"
+            },
+            {
+              "content": "=Aqui estão os dados atuais para análise:\n- Umidade Atual: {{ $node[\"simulaUmidade\"].json.random }}%\n- Clima (WeatherCode Open-Meteo): {{$node[\"buscaClima\"].json.current_weather.weathercode }}\n\nO que devo fazer?"
             }
           ]
         },
+        "builtInTools": {},
         "options": {}
       },
-      "type": "n8n-nodes-base.formTrigger",
-      "typeVersion": 2.5,
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
       "position": [
-        0,
+        1296,
         0
       ],
-      "id": "de578fa2-0743-405b-88e7-260113c1e3a3",
-      "name": "formTrigger",
-      "webhookId": "ab431005-5478-45a7-a79d-3df6a615235c"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "6161863f-1d4a-4201-910d-7a0873623a8f",
-              "leftValue": "={{ $json.Localidade }}",
-              "rightValue": "Casa",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            },
-            {
-              "id": "198b75ff-3d1d-4deb-b8eb-0acb4f454dcd",
-              "leftValue": "={{ $json.Localidade }}",
-              "rightValue": "Chácara",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "or"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        208,
-        0
-      ],
-      "id": "97a1fc8e-648b-455b-ba3d-22528e398aaa",
-      "name": "ifLocalidade"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "e5b5fa0d-a9e0-4efd-8193-fcd5cefdf17d",
-              "leftValue": "={{ $('simulaUmidade').item.json }}",
-              "rightValue": 40,
-              "operator": {
-                "type": "number",
-                "operation": "lt"
-              }
-            },
-            {
-              "id": "e03b8a76-fe2e-4f7c-b3cc-34e798ec7b64",
-              "leftValue": "={{ $json.current_weather.weathercode }}",
-              "rightValue": 3,
-              "operator": {
-                "type": "number",
-                "operation": "lt"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        1088,
-        0
-      ],
-      "id": "c9adff79-4c32-4787-96a9-6014ae637662",
-      "name": "ifIrrigacao",
-      "notes": "0 a 3: Céu limpo / Nublado (OK para irrigar)\n45 a 48: Nevoeiro (NÃO irrigar)\n51 a 67: Chuva leve a forte (NÃO irrigar)\n80 a 99: Pancadas e Tempestades (NÃO irrigar)"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "02de68ad-b489-4249-8ac4-245a784a5a0e",
-              "name": "lat",
-              "value": -22.9,
-              "type": "number"
-            },
-            {
-              "id": "2f3c579b-7027-4e1f-8574-09fe530220e5",
-              "name": "lon",
-              "value": -47.06,
-              "type": "number"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        432,
-        -128
-      ],
-      "id": "894d144c-c6f0-4f9a-843d-78002104b058",
-      "name": "casa/chacara"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "b4b25fa0-d062-4b6a-922f-243216da8804",
-              "name": "lat",
-              "value": -22.57,
-              "type": "number"
-            },
-            {
-              "id": "c6905309-6eb1-4f88-8653-7d8d605f581b",
-              "name": "lon",
-              "value": -47.17,
-              "type": "number"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        432,
-        96
-      ],
-      "id": "3a4aec36-156e-44dd-b9ef-316068b39831",
-      "name": "rancho"
-    },
-    {
-      "parameters": {
-        "operation": "completion",
-        "respondWith": "showText",
-        "responseText": "Solo e/ou clima secos - sistemas de irrigação ligados!"
-      },
-      "type": "n8n-nodes-base.form",
-      "typeVersion": 2.5,
-      "position": [
-        1312,
-        -80
-      ],
-      "id": "d3710279-d255-41a5-83d0-1de45a8c4fdc",
-      "name": "endTrue",
-      "webhookId": "151a0b72-9e8a-498f-bb3b-f3ced3cfa83d"
-    },
-    {
-      "parameters": {
-        "operation": "completion",
-        "completionTitle": "StandBy",
-        "completionMessage": "Solo e/ou clima secos - sistemas de irrigação em standby!",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.form",
-      "typeVersion": 2.5,
-      "position": [
-        1312,
-        80
-      ],
-      "id": "a0806873-74c9-4a41-8014-1f313f809f39",
-      "name": "endFalse",
-      "webhookId": "a7af8594-72ba-4ec3-a013-f5e2e0e40e12"
+      "id": "bbb82913-8c0b-4913-8ce3-386fea6178de",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "biG8WmsCOqohLJTQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -249,7 +84,7 @@
       "main": [
         [
           {
-            "node": "ifIrrigacao",
+            "node": "Message a model",
             "type": "main",
             "index": 0
           }
@@ -267,54 +102,7 @@
         ]
       ]
     },
-    "formTrigger": {
-      "main": [
-        [
-          {
-            "node": "ifLocalidade",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "ifLocalidade": {
-      "main": [
-        [
-          {
-            "node": "casa/chacara",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "rancho",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "ifIrrigacao": {
-      "main": [
-        [
-          {
-            "node": "endTrue",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "endFalse",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "casa/chacara": {
+    "trigger": {
       "main": [
         [
           {
@@ -323,22 +111,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "rancho": {
-      "main": [
-        [
-          {
-            "node": "buscaClima",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "endFalse": {
-      "main": [
-        []
       ]
     }
   },
@@ -347,8 +119,9 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "f2ecb9ae-ebc2-4770-9e40-360d6ba8f91f",
+  "versionId": "cdd49913-0b67-43bb-ad56-2c62647e938b",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "7aa8a3f2dc4d361920ebbc77b1d6eb32e4c1c8e902708b5a5a07675127d6504b"
   },
   "id": "EpMefcf03fgHtfFC",
